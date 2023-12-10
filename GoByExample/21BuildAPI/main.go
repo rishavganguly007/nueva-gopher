@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -35,6 +36,24 @@ func(c *Course) IsEmpty() bool {
 }
 
 func main() {
+	fmt.Println("Backend with Golang")
+	r := mux.NewRouter()
+
+	//seeding
+	courses = append(courses, Course{CourseId: "2", CourseName: "reactJS", Price: "299", Author: &Author{Fullname: "Rg",
+								Website: "abc.com"}})
+	courses = append(courses, Course{CourseId: "4", CourseName: "JAVA", Price: "299", Author: &Author{Fullname: "Rg",
+	Website: "abc.com"}})
+
+	//routing
+	r.HandleFunc("/", serveHome).Methods("GET")
+	r.HandleFunc("/courses", getAllCourses).Methods("GET")
+	r.HandleFunc("/course/{id}", getOneCourses).Methods("GET")
+	r.HandleFunc("/course", createOneCourse).Methods("POST")
+	r.HandleFunc("/course/{id}", updateOneCourse).Methods("PUT")
+	r.HandleFunc("/course/{id}", deleteOneCourse).Methods("DELETE")
+
+	log.Fatal(http.ListenAndServe(":4000", r))
 
 }
 
@@ -92,4 +111,42 @@ func createOneCourse(w http.ResponseWriter, r *http.Request){
 	course.CourseId = strconv.Itoa(rand.Intn(100))
 	json.NewEncoder(w).Encode(course)
 	return 
+}
+
+func updateOneCourse(w http.ResponseWriter, r *http.Request){
+	fmt.Println("Get One course")
+	w.Header().Set("Content-Type", "application/json")
+
+	// first - grab id from request
+	params := mux.Vars(r)
+
+	// lopp, id, remove, add with given id
+
+	for index, course := range courses {
+		if course.CourseId == params["id"]{
+			courses = append(courses[:index], courses[index + 1:]...)
+			var course Course
+			_ = json.NewDecoder(r.Body).Decode(&course)
+			course.CourseId = params["id"]
+			courses = append(courses, course)
+			json.NewEncoder(w).Encode(course)
+			return
+		}
+	}
+}
+
+func deleteOneCourse(w http.ResponseWriter, r *http.Request){
+	fmt.Println("Get One course")
+	w.Header().Set("Content-Type", "application/json")
+
+	params := mux.Vars(r)
+
+	// loop,id, remove
+
+	for index, course := range courses {
+		if course.CourseId == params["id"] {
+			courses = append(courses[:index], courses[index+1:]...)
+			break
+		}
+	}
 }
