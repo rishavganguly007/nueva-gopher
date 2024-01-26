@@ -1,4 +1,5 @@
 package urlshort
+
 import (
 	"net/http"
 )
@@ -11,9 +12,13 @@ import (
 // http.Handler will be called instead.
 func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.HandlerFunc {
 	//	TODO: Implement this...
-	http.HandleFunc("/me", handlers.MeHandler) //neeed fixing
 
+	http.HandleFunc("/me", MeHandler)
 	return nil
+}
+
+func MeHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "http://www.google.com", http.StatusSeeOther)
 }
 
 // YAMLHandler will parse the provided YAML and then return
@@ -24,8 +29,8 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 //
 // YAML is expected to be in the format:
 //
-//     - path: /some-path
-//       url: https://www.some-url.com/demo
+//   - path: /some-path
+//     url: https://www.some-url.com/demo
 //
 // The only errors that can be returned all related to having
 // invalid YAML data.
